@@ -1,0 +1,35 @@
+#!/bin/sh
+
+files=$(git diff --cached --diff-filter=ACM --name-only | grep ".js$")
+if [ "$files" = "" ]; then 
+    exit 0 
+fi
+
+pass=true
+
+echo "[Validating Javascript]"
+echo ""
+
+for file in ${files}; do
+    jshint ${file}
+    result=$(jshint ${file} | grep "error")
+
+    if [ "$result" = "" ]; then
+        echo "[JSHint PASS: ${file}]"
+        echo ""
+        echo "=============================="
+    else
+        echo "[JSHint FAIL: ${file}]"
+        echo ""
+        echo "=============================="
+        pass=false
+    fi
+done
+
+echo ""
+if ! $pass; then
+    echo "[Commit FAIL: Please fix the JSHint errors and try again.]"
+    exit 1
+else
+    echo "[Commit PASS]"
+fi
